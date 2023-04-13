@@ -1,4 +1,10 @@
 import { Routes, Route } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_API_KEY
+);
 
 //Components
 import NavBar from "./components/NavBar";
@@ -8,7 +14,6 @@ import Mosaic from "./components/Mosaic";
 //Data
 import categories from "./Data/Categories";
 import items from "./Data/Items";
-import mods from "./data/Mods";
 import ModPage from "./pages/mod.page";
 
 const Home = () => (
@@ -19,6 +24,12 @@ const Home = () => (
 );
 
 function App() {
+  // Supabase call example
+  // async function getCountries() {
+  //   const { data } = await supabase.from("countries").select();
+  //   setCountries(data);
+  // }
+
   return (
     <div className="App font-Comfortaa">
       <NavBar />
