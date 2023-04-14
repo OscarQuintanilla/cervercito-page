@@ -34,12 +34,10 @@ const ModPage = () => {
         <div>
           <div className="bg-white px-8 mx-12 rounded-md py-12">
             <div className="flex flex-col my-0">
-              <div className="rounded overflow-hidden aspect-square max-w-fit">
-                <img
-                  src="https://picsum.photos/200/300"
-                  alt={mod.name}
-                  className="h-full"
-                />
+              <div className="flex flex-row">
+                <div className="flex basis-1/2">
+                  <img src={mod.image} alt={mod.name} className="" />
+                </div>
               </div>
               <div className="flex flex-col mb-8 mt-3">
                 <div className=" mb-4">
