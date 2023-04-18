@@ -1,10 +1,10 @@
-import { Routes, Route } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
+import { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { supabase } from "../supabase/client";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_API_KEY
-);
+//Pages
+import LoginPage from "./pages/login.page";
+import ModPage from "./pages/mod.page";
 
 //Components
 import NavBar from "./components/NavBar";
@@ -14,7 +14,7 @@ import Mosaic from "./components/Mosaic";
 //Data
 import categories from "./Data/Categories";
 import items from "./Data/Items";
-import ModPage from "./pages/mod.page";
+import { useEffect } from "react";
 
 const Home = () => (
   <div className="bg-white p-8 mx-12 mt-160 rounded-md align-bottom">
@@ -24,18 +24,28 @@ const Home = () => (
 );
 
 function App() {
-  // Supabase call example
-  // async function getCountries() {
-  //   const { data } = await supabase.from("countries").select();
-  //   setCountries(data);
-  // }
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/login");
+      } else {
+        navigate("/");
+        setSession(session);
+      }
+    });
+  }, []);
 
   return (
     <div className="App font-Comfortaa">
-      <NavBar />
+      <NavBar session={session} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mod/:modId" element={<ModPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<h1>404: Not Found</h1>} />
       </Routes>
     </div>
   );
