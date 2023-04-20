@@ -1,50 +1,40 @@
-import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../supabase/client";
 
 //Pages
+import Home from "./pages/home.page";
 import LoginPage from "./pages/login.page";
 import ModPage from "./pages/mod.page";
+import AdminPanel from "./pages/adminPanel.page";
 
 //Components
 import NavBar from "./components/NavBar";
-import Gallery from "./components/Gallery";
-import Mosaic from "./components/Mosaic";
-
-//Data
-import categories from "./Data/Categories";
-import items from "./Data/Items";
-import { useEffect } from "react";
-
-const Home = () => (
-  <div className="bg-white p-8 mx-12 mt-160 rounded-md align-bottom">
-    <Mosaic title={"Categorías de nuestros mods"} categories={categories} />
-    <Gallery title={"Galería"} items={items} />
-  </div>
-);
 
 function App() {
   const [session, setSession] = useState(null);
+  const [location, setLocation] = useState(useLocation());
+
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
+      if (!session && location.pathname != "/") {
         navigate("/login");
       } else {
-        navigate("/");
         setSession(session);
       }
     });
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="App font-Comfortaa">
-      <NavBar session={session} />
+      <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mod/:modId" element={<ModPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/panel" element={<AdminPanel />} />
         <Route path="*" element={<h1>404: Not Found</h1>} />
       </Routes>
     </div>
