@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import mods from "../data/Mods";
-import categories from "../Data/Categories";
+import categories from "../data/Categories";
 
 const ModPage = () => {
   const { modId } = useParams();

@@ -10,6 +10,7 @@ import AdminPanel from "./pages/adminPanel.page";
 
 //Components
 import NavBar from "./components/NavBar";
+import ModForm from "./components/mod.form";
 
 function App() {
   const [session, setSession] = useState(null);
@@ -33,6 +34,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mod/:modId" element={<ModPage />} />
+        <Route path="/mod/register" element={<ModForm />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin/panel" element={<AdminPanel />} />
         <Route path="*" element={<h1>404: Not Found</h1>} />
