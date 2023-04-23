@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const adminPanel = () => {
   return (
     <div className="bg-white p-8 mx-12 rounded-md align-bottom text-center">
@@ -6,9 +8,11 @@ const adminPanel = () => {
         <div className="bg-blue-500 p-5 aspect-square flex flex-row">
           *Show Mod Stats*
         </div>
-        <div className="bg-blue-500 p-5 aspect-square flex flex-row">
-          Mods Panel
-        </div>
+        <Link to="/mod/panel">
+          <div className="bg-blue-500 p-5 aspect-square flex flex-row">
+            Mods Panel
+          </div>
+        </Link>
         <div className="bg-blue-500 p-5 aspect-square">Forum</div>
         <div className="bg-blue-500 p-5 aspect-square">Screenshots</div>
       </div>

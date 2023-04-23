@@ -21,6 +21,10 @@ const ModForm = () => {
     // Handle form submission logic here
   };
 
+  const allFieldsFilled = Object.values(formData).every(
+    (value) => value.trim() !== ""
+  );
+
   return (
     <div className="grid grid-cols-3 gap-6 bg-white px-8 mx-12 rounded-md py-12">
       <form className="space-y-6 col-span-2" onSubmit={handleSubmit}>
@@ -179,9 +183,12 @@ const ModForm = () => {
         </div>
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className={`w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+            !allFieldsFilled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          disabled={!allFieldsFilled}
         >
-          Submit
+          Register Mod
         </button>
       </form>
       <div className="bg-gray-100 p-6 rounded-md">

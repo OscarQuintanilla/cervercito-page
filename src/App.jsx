@@ -7,6 +7,8 @@ import Home from "./pages/home.page";
 import LoginPage from "./pages/login.page";
 import ModPage from "./pages/mod.page";
 import AdminPanel from "./pages/adminPanel.page";
+import ModPanel from "./pages/modPanel.page";
+import ModTable from "./pages/modTable.page";
 
 //Components
 import NavBar from "./components/NavBar";
@@ -34,7 +36,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mod/:modId" element={<ModPage />} />
+        <Route path="/mod/panel" element={<ModPanel />} />
+        <Route path="/mod/list" element={<ModTable />} />
         <Route path="/mod/register" element={<ModForm />} />
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin/panel" element={<AdminPanel />} />
         <Route path="*" element={<h1>404: Not Found</h1>} />

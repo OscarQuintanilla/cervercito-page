@@ -58,7 +58,13 @@ function NavBar() {
         <div>Forum</div>
       </div>
       <div className="flex flex-row">
-        <div className="mr-8">{session ? session.user.email : <></>}</div>
+        <div className="mr-8">
+          {session ? (
+            <Link to="/admin/panel">{session.user.email}</Link>
+          ) : (
+            <></>
+          )}
+        </div>
         <div>
           {session ? <div>{logoutButton()}</div> : <div>{loginButton()}</div>}
         </div>
