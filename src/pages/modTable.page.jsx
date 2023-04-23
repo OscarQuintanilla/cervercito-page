@@ -1,13 +1,43 @@
-import modsData from "../data/Mods.js";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "../../supabase/client";
 
 const ModsTable = () => {
   const [data, setData] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  async function getModData() {
+    const response = await supabase.from("mods").select();
+    return response;
+  }
+
+  async function getCategoryData() {
+    const response = await supabase.from("categories").select();
+    return response;
+  }
+
+  function getModCategory(categoryId) {
+    const category = categories.find((c) => c.id === categoryId);
+    return category.name;
+  }
 
   useEffect(() => {
-    setData(modsData);
-  }, [modsData]);
+    getCategoryData().then((result) => {
+      if (result.data) {
+        setCategories(result.data);
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+
+    getModData().then((result) => {
+      if (result.data) {
+        setData(result.data);
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+  }, []);
 
   return (
     <div className="bg-gray-100 p-8 mx-12 rounded-md align-bottom text-center">
@@ -66,7 +96,9 @@ const ModsTable = () => {
               </p>
             </div>
             <div className="border border-slate-600 col-span-2 flex items-center">
-              <p className="text-center w-full">{mod.category}</p>
+              <p className="text-center w-full">
+                {getModCategory(mod.category)}
+              </p>
             </div>
             <div className="border border-slate-600 p-4 col-span-1 flex items-center">
               <Link to={mod.image} className="w-full">
