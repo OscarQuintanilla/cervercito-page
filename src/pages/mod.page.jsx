@@ -1,18 +1,30 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import mods from "../data/Mods";
 import categories from "../data/Categories";
+import { supabase } from "../../supabase/client";
 
 const ModPage = () => {
   const { modId } = useParams();
   const [mod, setMod] = useState(null);
   const [category, setCategory] = useState(null);
 
+  async function getModbyId() {
+    const response = await supabase.from("mods").select().eq("id", modId);
+    return response;
+  }
+
   // look for the mod in the mods array
   useEffect(() => {
-    const mod = mods.find((mod) => mod.id == modId);
-    setMod(mod);
-  }, [modId]);
+    // const mod = mods.find((mod) => mod.id == modId);
+    // setMod(mod);
+    getModbyId().then((result) => {
+      if (result.data) {
+        setMod(result.data[0]);
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     try {
