@@ -10,13 +10,14 @@ const ModsTable = () => {
   }, [modsData]);
 
   return (
-    <div className="bg-white p-8 mx-12 rounded-md align-bottom text-center">
+    <div className="bg-gray-100 p-8 mx-12 rounded-md align-bottom text-center">
       <div className="table-fixed w-full">
         <div className="caption-top">
           <h1 className="">Mod List</h1>
         </div>
-        <div className="grid grid-cols-16 align-middle max-h-12">
-          <div className="border border-slate-600 flex items-center col-span-2 py-2">
+        {/* Header Section */}
+        <div className="grid grid-cols-16 align-middle max-h-12 bg-gray-400">
+          <div className="border border-slate-600 flex items-center col-span-2 py-2 ">
             <p className="text-center w-full">Name</p>
           </div>
           <div className="border border-slate-600 flex items-center col-span-2 py-2">
@@ -50,8 +51,9 @@ const ModsTable = () => {
             </p>
           </div>
         </div>
+        {/* Data Section */}
         {data.map((mod) => (
-          <div className="grid grid-cols-16 max-h-32" key={mod.id}>
+          <div className="grid grid-cols-16 max-h-32 bg-gray-200" key={mod.id}>
             <div className="border border-slate-600 col-span-2 flex items-center">
               <p className="text-center w-full">{mod.name}</p>
             </div>
