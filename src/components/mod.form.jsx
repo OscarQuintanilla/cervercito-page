@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const ModForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     subtitle: "",
     description: "",
-    category: "",
+    category: 1,
     image: "",
-    tags: "",
-    documentationLink: "",
-    downloadedLink: "",
+    documentation_link: "",
+    downloaded_link: "",
   });
+
+  const [tags, setTags] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  const navigate = useNavigate();
+
+  async function getCategories() {
+    const response = await supabase.from("categories").select();
+    return response;
+  }
+
+  async function createMod() {
+    const response = await supabase.from("mods").insert([formData]);
+    return response;
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,12 +34,37 @@ const ModForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission logic here
+    createMod().then((result) => {
+      if (result.status == 201) {
+        setFormData({
+          name: "",
+          subtitle: "",
+          description: "",
+          category: 1,
+          image: "",
+          documentation_link: "",
+          downloaded_link: "",
+        });
+        navigate("/mod/list");
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
   };
 
   const allFieldsFilled = Object.values(formData).every(
-    (value) => value.trim() !== ""
+    (value) => value !== ""
   );
+
+  useEffect(() => {
+    getCategories().then((result) => {
+      if (result.data) {
+        setCategories(result.data);
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+  }, []);
 
   return (
     <div className="grid grid-cols-3 gap-6 bg-white px-8 mx-12 rounded-md py-12">
@@ -93,16 +134,19 @@ const ModForm = () => {
             >
               Category
             </label>
-            <input
-              className="border py-2 px-3 text-gray-900"
-              type="text"
+            <select
               name="category"
-              id="category"
-              placeholder="Category"
+              id="categoriesSelect"
+              className="border py-2 px-3 text-gray-900"
               value={formData.category}
               onChange={handleChange}
-              required
-            />
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
           {/* Image Input */}
           <div className="flex flex-col mb-4">
@@ -137,8 +181,6 @@ const ModForm = () => {
               name="tags"
               id="tags"
               placeholder="Tags"
-              value={formData.tags}
-              onChange={handleChange}
               required
             />
           </div>
@@ -153,10 +195,10 @@ const ModForm = () => {
             <input
               className="border py-2 px-3 text-gray-900"
               type="url"
-              name="documentationLink"
-              id="documentationLink"
+              name="documentation_link"
+              id="documentation_link"
               placeholder="Documentation URL"
-              value={formData.documentationLink}
+              value={formData.documentation_link}
               onChange={handleChange}
               required
             />
@@ -172,10 +214,10 @@ const ModForm = () => {
             <input
               className="border py-2 px-3 text-gray-900"
               type="url"
-              name="downloadedLink"
-              id="downloadedLink"
+              name="downloaded_link"
+              id="downloaded_link"
               placeholder="Download URL"
-              value={formData.downloadedLink}
+              value={formData.downloaded_link}
               onChange={handleChange}
               required
             />
@@ -191,13 +233,7 @@ const ModForm = () => {
           Register Mod
         </button>
       </form>
-      <div className="bg-gray-100 p-6 rounded-md">
-        <h2 className="text-2xl font-bold mb-4">{formData.name || "Name"}</h2>
-        <h3 className="text-xl font-semibold mb-2">
-          {formData.subtitle || "Subtitle"}
-        </h3>
-        <p className="mb-4">{formData.description || "Description"}</p>
-        <p className="mb-4">Category: {formData.category || "Category"}</p>
+      <div className="bg-gray-100 p-6 rounded-md text-ellipsis overflow-hidden">
         {formData.image && (
           <img
             src={formData.image}
@@ -205,16 +241,22 @@ const ModForm = () => {
             className="w-full h-auto mb-4"
           />
         )}
+        <h2 className="text-2xl font-bold mb-4">{formData.name || "Name"}</h2>
+        <h3 className="text-xl font-semibold mb-2">
+          {formData.subtitle || "Subtitle"}
+        </h3>
+        <p className="mb-4">{formData.description || "Description"}</p>
+        <p className="mb-4">Category: {formData.category || "Category"}</p>
         <p className="mb-4">Tags: {formData.tags || "Tags"}</p>
         <p className="mb-4">
           Documentation Link:{" "}
-          {formData.documentationLink ? (
+          {formData.documentation_link ? (
             <a
-              href={formData.documentationLink}
+              href={formData.documentation_link}
               target="_blank"
               rel="noreferrer"
             >
-              {formData.documentationLink}
+              {formData.documentation_link}
             </a>
           ) : (
             "Documentation Link"
@@ -222,9 +264,9 @@ const ModForm = () => {
         </p>
         <p>
           Downloaded Link:{" "}
-          {formData.downloadedLink ? (
-            <a href={formData.downloadedLink} target="_blank" rel="noreferrer">
-              {formData.downloadedLink}
+          {formData.downloaded_link ? (
+            <a href={formData.downloaded_link} target="_blank" rel="noreferrer">
+              {formData.downloaded_link}
             </a>
           ) : (
             "Downloaded Link"

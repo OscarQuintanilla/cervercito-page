@@ -13,10 +13,7 @@ const ModPage = () => {
     return response;
   }
 
-  // look for the mod in the mods array
   useEffect(() => {
-    // const mod = mods.find((mod) => mod.id == modId);
-    // setMod(mod);
     getModbyId().then((result) => {
       if (result.data) {
         setMod(result.data[0]);
@@ -86,23 +83,3 @@ const ModPage = () => {
 };
 
 export default ModPage;
-
-// mod sample data
-// {
-//   id: 1,
-
-//   image: "https://picsum.photos/200/300",
-//   name: "Chat Heads",
-//   subtitle: "Agrega skins a los chats de Minecraft",
-//   category: 1,
-
-//   description: "Agrega skins a los chats de Minecraft",
-
-//   videos: ["https://www.youtube.com/watch?v=1Q8fG0TtVAY"],
-
-//   documentationLink: "https://www.google.com",
-//   downloadedLink: "https://www.google.com",
-
-//   tags: ["tag1", "tag2", "tag3"],
-//   creationDate: "2021-01-01",
-// },
