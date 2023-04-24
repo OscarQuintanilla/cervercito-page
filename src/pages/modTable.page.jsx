@@ -16,9 +16,31 @@ const ModsTable = () => {
     return response;
   }
 
+  async function deleteMod(id) {
+    const response = await supabase.from("mods").delete().eq("id", id);
+    return response;
+  }
+
   function getModCategory(categoryId) {
     const category = categories.find((c) => c.id === categoryId);
+    if (!category) return "Sin categoría";
     return category.name;
+  }
+
+  function handleDelete(id) {
+    deleteMod(id).then((result) => {
+      if (result.status == 204) {
+        getModData().then((result) => {
+          if (result.data) {
+            setData(result.data);
+          } else if (result.error) {
+            console.log(result.error);
+          }
+        });
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
   }
 
   useEffect(() => {
@@ -82,52 +104,65 @@ const ModsTable = () => {
           </div>
         </div>
         {/* Data Section */}
-        {data.map((mod) => (
-          <div className="grid grid-cols-16 max-h-32 bg-gray-200" key={mod.id}>
-            <div className="border border-slate-600 col-span-2 flex items-center">
-              <p className="text-center w-full">{mod.name}</p>
+        {data.length != 0 ? (
+          data.map((mod) => (
+            <div
+              className="grid grid-cols-16 max-h-32 bg-gray-200"
+              key={mod.id}
+            >
+              <div className="border border-slate-600 col-span-2 flex items-center">
+                <p className="text-center w-full">{mod.name}</p>
+              </div>
+              <div className="border border-slate-600 col-span-2 flex items-center">
+                <p className="text-center w-full">{mod.subtitle}</p>
+              </div>
+              <div className="border border-slate-600 col-span-3 flex items-center truncate p-4">
+                <p className="text-center w-full text-ellipsis overflow-hidden">
+                  {mod.description}
+                </p>
+              </div>
+              <div className="border border-slate-600 col-span-2 flex items-center">
+                <p className="text-center w-full">
+                  {getModCategory(mod.category)}
+                </p>
+              </div>
+              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
+                <Link to={mod.image} className="w-full">
+                  <span className="material-symbols-outlined">
+                    photo_library
+                  </span>
+                </Link>
+              </div>
+              <div className="border border-slate-600 col-span-2 flex items-center">
+                <p className="text-center w-full">{mod.tags}</p>
+              </div>
+              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
+                <Link to={mod.documentation_link} className="w-full">
+                  <span className="material-symbols-outlined">link</span>
+                </Link>
+              </div>
+              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
+                <Link to={mod.downloaded_link} className="w-full">
+                  <span className="material-symbols-outlined">link</span>
+                </Link>
+              </div>
+              <div className="border border-slate-600 py-4 col-span-2 flex items-center justify-center">
+                <button>
+                  <span className="material-symbols-outlined">edit_square</span>
+                </button>
+                <button onClick={() => handleDelete(mod.id)}>
+                  <span className="material-symbols-outlined">delete</span>
+                </button>
+              </div>
             </div>
-            <div className="border border-slate-600 col-span-2 flex items-center">
-              <p className="text-center w-full">{mod.subtitle}</p>
-            </div>
-            <div className="border border-slate-600 col-span-3 flex items-center truncate p-4">
-              <p className="text-center w-full text-ellipsis overflow-hidden">
-                {mod.description}
-              </p>
-            </div>
-            <div className="border border-slate-600 col-span-2 flex items-center">
-              <p className="text-center w-full">
-                {getModCategory(mod.category)}
-              </p>
-            </div>
-            <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-              <Link to={mod.image} className="w-full">
-                <span className="material-symbols-outlined">photo_library</span>
-              </Link>
-            </div>
-            <div className="border border-slate-600 col-span-2 flex items-center">
-              <p className="text-center w-full">{mod.tags}</p>
-            </div>
-            <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-              <Link to={mod.documentation_link} className="w-full">
-                <span className="material-symbols-outlined">link</span>
-              </Link>
-            </div>
-            <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-              <Link to={mod.downloaded_link} className="w-full">
-                <span className="material-symbols-outlined">link</span>
-              </Link>
-            </div>
-            <div className="border border-slate-600 py-4 col-span-2 flex items-center justify-center">
-              <Link to={mod.downloaded_link} className="px-2">
-                <span className="material-symbols-outlined">edit_square</span>
-              </Link>
-              <Link to="">
-                <span className="material-symbols-outlined">delete</span>
-              </Link>
+          ))
+        ) : (
+          <div className="grid grid-cols-1 max-h-32 bg-gray-200">
+            <div className="col-span-1 justify-center p-8">
+              <p className="text-center w-full">No Mods Found</p>
             </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
