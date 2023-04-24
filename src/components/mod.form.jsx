@@ -14,7 +14,10 @@ const ModForm = () => {
   });
 
   const [tags, setTags] = useState([]);
+  const [formTags, setFormTags] = useState([]);
+  const [newModTagsArray, setNewModTagsArray] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,24 +31,74 @@ const ModForm = () => {
     return response;
   }
 
+  // Tags functions
+  async function getTags() {
+    const response = await supabase.from("tags").select();
+    return response;
+  }
+
+  async function createTag(tag) {
+    const response = await supabase.from("tags").insert(tag);
+    return response;
+  }
+
+  function formTagsToArray() {
+    if (formTags.length > 0) {
+      const tagsArray = formTags.split(", ");
+      tagsArray[tagsArray.length - 1].trim();
+      if (tagsArray[tagsArray.length - 1].trim() === "") {
+        tagsArray.pop();
+      }
+      return tagsArray;
+    }
+  }
+
+  // Use this function to find the tags that are not in the database
+  function findMissingTags(a, b) {
+    if (a && b) {
+      const bSet = new Set(b);
+      const result = a.filter((element) => !bSet.has(element));
+      let toInsert = result.map((tag) => {
+        return { name: tag };
+      });
+
+      return toInsert;
+    }
+  }
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleTagsChange = (e) => {
+    setFormTags(e.target.value);
+  };
+
+  useEffect(() => {
+    setNewModTagsArray(formTagsToArray());
+  }, [formTags]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // creates a new mod
     createMod().then((result) => {
       if (result.status == 201) {
-        setFormData({
-          name: "",
-          subtitle: "",
-          description: "",
-          category: 1,
-          image: "",
-          documentation_link: "",
-          downloaded_link: "",
-        });
         navigate("/mod/list");
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+
+    let newTags = findMissingTags(newModTagsArray, tags);
+    createTag(newTags).then((result) => {
+      if (result.status == 201) {
+        getTags().then((result) => {
+          if (result.data) {
+            setTags(result.data);
+          } else if (result.error) {
+            console.log(result.error);
+          }
+        });
       } else if (result.error) {
         console.log(result.error);
       }
@@ -56,10 +109,19 @@ const ModForm = () => {
     (value) => value !== ""
   );
 
+  // Retrieves the categories and tags from the database
   useEffect(() => {
     getCategories().then((result) => {
       if (result.data) {
         setCategories(result.data);
+      } else if (result.error) {
+        console.log(result.error);
+      }
+    });
+
+    getTags().then((result) => {
+      if (result.data) {
+        setTags(result.data);
       } else if (result.error) {
         console.log(result.error);
       }
@@ -171,16 +233,18 @@ const ModForm = () => {
           <div className="flex flex-col mb-4">
             <label
               className="mb-2 uppercase font-bold text-lg text-gray-900"
-              htmlFor="tags"
+              htmlFor="formTags"
             >
               Tags
             </label>
             <input
               className="border py-2 px-3 text-gray-900"
               type="text"
-              name="tags"
-              id="tags"
+              name="formTags"
+              id="formTags"
               placeholder="Tags"
+              value={formTags}
+              onChange={handleTagsChange}
               required
             />
           </div>
