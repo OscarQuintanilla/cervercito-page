@@ -62,8 +62,15 @@ const ModsTable = () => {
   }, []);
 
   return (
-    <div className="bg-gray-100 p-8 mx-12 rounded-md align-bottom text-center">
-      <div className="table-fixed w-full">
+    <div className="bg-gray-100 p-8 mx-12 rounded-md">
+      <div className="grid justify-items-end mb-6 ">
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ">
+          <Link to="/mod/register">Add new mod</Link>
+        </button>
+      </div>
+
+      {/* Table Section */}
+      <div className=" w-full">
         <div className="caption-top">
           <h1 className="">Mod List</h1>
         </div>
@@ -146,7 +153,12 @@ const ModsTable = () => {
                   <span className="material-symbols-outlined">link</span>
                 </Link>
               </div>
-              <div className="border border-slate-600 py-4 col-span-2 flex items-center justify-center">
+              <div className="border border-slate-600 py-4 col-span-2 flex items-center justify-around">
+                <Link to={`/mod/${mod.id}`}>
+                  <button>
+                    <span class="material-symbols-outlined">visibility</span>
+                  </button>
+                </Link>
                 <button>
                   <span className="material-symbols-outlined">edit_square</span>
                 </button>
