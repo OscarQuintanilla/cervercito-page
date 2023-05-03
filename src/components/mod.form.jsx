@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../../supabase/client";
 import { useNavigate } from "react-router-dom";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import "react-quill/dist/quill.bubble.css";
 
 const ModForm = () => {
   const [formData, setFormData] = useState({
@@ -11,36 +14,52 @@ const ModForm = () => {
     image: "",
     documentation_link: "",
     downloaded_link: "",
+    documentation_videos: "",
   });
 
-  const [tags, setTags] = useState([]);
+  const [databaseTagsArray, setDatabaseTagsArray] = useState([]);
   const [formTags, setFormTags] = useState([]);
   const [newModTagsArray, setNewModTagsArray] = useState([]);
   const [categories, setCategories] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [errorSavingMod, setErrorSavingMod] = useState(false);
 
   const navigate = useNavigate();
 
-  async function getCategories() {
+  // queries
+
+  async function queryGetCategories() {
     const response = await supabase.from("categories").select();
     return response;
   }
 
-  async function createMod() {
-    const response = await supabase.from("mods").insert([formData]);
+  async function queryCreateMod(mod_object) {
+    const response = await supabase.from("mods").insert([mod_object]);
     return response;
   }
 
-  // Tags functions
-  async function getTags() {
+  async function queryGetModByName(name) {
+    const response = await supabase.from("mods").select().eq("name", name);
+    return response;
+  }
+
+  async function queryGetTags() {
     const response = await supabase.from("tags").select();
     return response;
   }
 
-  async function createTag(tag) {
-    const response = await supabase.from("tags").insert(tag);
+  async function queryCreateTag(tag_array) {
+    const response = await supabase.from("tags").insert(tag_array);
     return response;
   }
+
+  // Creates Relations between the new mod and the tags
+  async function queryCreateModTagsRelation(relationsArray) {
+    const response = await supabase.from("mod_tag").insert(relationsArray);
+    return response;
+  }
+
+  // Data handlers
 
   function formTagsToArray() {
     if (formTags.length > 0) {
@@ -49,23 +68,45 @@ const ModForm = () => {
       if (tagsArray[tagsArray.length - 1].trim() === "") {
         tagsArray.pop();
       }
-      return tagsArray;
+      const tagsArrayObjects = tagsArray.map((tag) => {
+        return { name: tag };
+      });
+
+      return tagsArrayObjects;
     }
   }
 
   // Use this function to find the tags that are not in the database
-  function findMissingTags(a, b) {
-    if (a && b) {
-      const bSet = new Set(b);
-      const result = a.filter((element) => !bSet.has(element));
-      let toInsert = result.map((tag) => {
-        return { name: tag };
+  function findMissingTags(formTags, dataBaseTags) {
+    if (formTags && dataBaseTags) {
+      const bSet = new Set(dataBaseTags);
+      const result = formTags.filter((element) => {
+        return !Array.from(bSet).some((b) => b.name == element.name);
       });
 
-      return toInsert;
+      return result;
     }
   }
 
+  function findMatchingTags(formTags, dataBaseTags) {
+    if (formTags && dataBaseTags) {
+      const result = formTags.map((formTag) => {
+        return dataBaseTags.find((tag) => tag.name === formTag.name);
+      });
+
+      return result;
+    }
+  }
+
+  function prepareRelationModTagsObject(mod_id, tagsArray) {
+    const relationsArray = tagsArray.map((tag) => {
+      return { mod_id, tag_id: tag.id };
+    });
+
+    return relationsArray;
+  }
+
+  // Form handlers
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -78,40 +119,99 @@ const ModForm = () => {
     setNewModTagsArray(formTagsToArray());
   }, [formTags]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // creates a new mod
-    createMod().then((result) => {
-      if (result.status == 201) {
-        navigate("/mod/list");
-      } else if (result.error) {
-        console.log(result.error);
-      }
-    });
-
-    let newTags = findMissingTags(newModTagsArray, tags);
-    createTag(newTags).then((result) => {
-      if (result.status == 201) {
-        getTags().then((result) => {
-          if (result.data) {
-            setTags(result.data);
-          } else if (result.error) {
-            console.log(result.error);
-          }
-        });
-      } else if (result.error) {
-        console.log(result.error);
-      }
-    });
-  };
+  useEffect(() => {
+    const missingTags = findMissingTags(newModTagsArray, databaseTagsArray);
+  }, [newModTagsArray]);
 
   const allFieldsFilled = Object.values(formData).every(
     (value) => value !== ""
   );
 
+  // insert new mod and tags
+  /**
+   * Steps
+   * 1. Insert new mod
+   * 2. Insert the new tags if there are any new tags
+   * 3. Get the id of the new tags
+   * 4. Insert the relations between the new mod and the new tags
+   */
+  const insertNewModProcess = async () => {
+    const queryModResponse = await queryCreateMod(formData);
+    if (queryModResponse.status === 201) {
+      // Mod created successfully
+      const createdMod = await queryGetModByName(formData.name);
+      const mod_id = createdMod.data[0].id;
+      const missingTags = findMissingTags(newModTagsArray, databaseTagsArray);
+      if (missingTags) {
+        // Insert the new tags if there are any new tags
+        const queryCreateTagsResponse = await queryCreateTag(missingTags);
+        if (queryCreateTagsResponse.status === 201) {
+          // Tags created successfully
+          const allTags = await queryGetTags();
+          console.log(allTags);
+          const matchingTagsArray = findMatchingTags(
+            newModTagsArray,
+            allTags.data
+          );
+          console.log(matchingTagsArray);
+          const relationsArray = prepareRelationModTagsObject(
+            mod_id,
+            matchingTagsArray
+          );
+          console.log(relationsArray);
+          const relationResponse = await queryCreateModTagsRelation(
+            relationsArray
+          );
+          if (relationResponse.status === 201) {
+            // Relations created successfully
+            setSaving(false);
+            navigate("/mod/list");
+          } else {
+            console.log("Error creating relations");
+            console.log(relationResponse.error);
+          }
+        } else {
+          console.log("Error creating new tags");
+          console.log(queryCreateTagsResponse.error);
+        }
+      } else {
+        // There are no new tags
+        const matchingTagsArray = findMatchingTags(
+          newModTagsArray,
+          databaseTagsArray
+        );
+        const relationsArray = prepareRelationModTagsObject(
+          mod_id,
+          matchingTagsArray
+        );
+        const relationResponse = await queryCreateModTagsRelation(
+          relationsArray
+        );
+        if (relationResponse.status === 201) {
+          // Relations created successfully
+          setSaving(false);
+          navigate("/mod/list");
+        }
+      }
+    }
+  };
+
+  // handle submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSaving(true);
+  };
+
+  useEffect(() => {
+    if (saving) {
+      console.log("saving");
+      insertNewModProcess();
+    }
+  }, [saving]);
+
   // Retrieves the categories and tags from the database
   useEffect(() => {
-    getCategories().then((result) => {
+    queryGetCategories().then((result) => {
       if (result.data) {
         setCategories(result.data);
       } else if (result.error) {
@@ -119,9 +219,9 @@ const ModForm = () => {
       }
     });
 
-    getTags().then((result) => {
+    queryGetTags().then((result) => {
       if (result.data) {
-        setTags(result.data);
+        setDatabaseTagsArray(result.data);
       } else if (result.error) {
         console.log(result.error);
       }
@@ -166,24 +266,6 @@ const ModForm = () => {
               id="subtitle"
               placeholder="Subtitle"
               value={formData.subtitle}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          {/* Description Input */}
-          <div className="flex flex-col mb-4">
-            <label
-              className="mb-2 uppercase font-bold text-lg text-gray-900"
-              htmlFor="description"
-            >
-              Description
-            </label>
-            <textarea
-              className="border py-2 px-3 text-gray-900"
-              name="description"
-              id="description"
-              placeholder="Description"
-              value={formData.description}
               onChange={handleChange}
               required
             />
@@ -286,6 +368,49 @@ const ModForm = () => {
               required
             />
           </div>
+          {/* Documentation Videos */}
+          <div className="flex flex-col mb-4">
+            <label
+              className="mb-2 uppercase font-bold text-lg text-gray-900"
+              htmlFor="downloadedLink"
+            >
+              Documentation Videos
+            </label>
+            <input
+              className="border py-2 px-3 text-gray-900"
+              type="url"
+              name="documentation_videos"
+              id="documentation_videos"
+              placeholder="Download URL"
+              value={formData.documentation_videos}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        </div>
+
+        {/* Description Input */}
+        <div className="flex flex-col mb-4">
+          <label
+            className="mb-2 uppercase font-bold text-lg text-gray-900"
+            htmlFor="description"
+          >
+            Description
+          </label>
+          <ReactQuill
+            theme="snow"
+            value={formData.description}
+            onChange={(value) =>
+              handleChange({ target: { name: "description", value } })
+            }
+            modules={{
+              toolbar: [
+                ["bold", "italic", "underline"],
+                ["link", "blockquote", "image"],
+                [{ list: "ordered" }, { list: "bullet" }],
+              ],
+            }}
+          />
         </div>
         <button
           type="submit"
@@ -309,33 +434,12 @@ const ModForm = () => {
         <h3 className="text-xl font-semibold mb-2">
           {formData.subtitle || "Subtitle"}
         </h3>
-        <p className="mb-4">{formData.description || "Description"}</p>
-        <p className="mb-4">Category: {formData.category || "Category"}</p>
-        <p className="mb-4">Tags: {formData.tags || "Tags"}</p>
-        <p className="mb-4">
-          Documentation Link:{" "}
-          {formData.documentation_link ? (
-            <a
-              href={formData.documentation_link}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {formData.documentation_link}
-            </a>
-          ) : (
-            "Documentation Link"
-          )}
-        </p>
-        <p>
-          Downloaded Link:{" "}
-          {formData.downloaded_link ? (
-            <a href={formData.downloaded_link} target="_blank" rel="noreferrer">
-              {formData.downloaded_link}
-            </a>
-          ) : (
-            "Downloaded Link"
-          )}
-        </p>
+        <ReactQuill
+          value={formData.description || "No Description"}
+          readOnly={true}
+          theme={"bubble"}
+          className="m-0 p-0"
+        />
       </div>
     </div>
   );

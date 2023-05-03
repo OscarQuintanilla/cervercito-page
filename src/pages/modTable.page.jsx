@@ -156,7 +156,9 @@ const ModsTable = () => {
               <div className="border border-slate-600 py-4 col-span-2 flex items-center justify-around">
                 <Link to={`/mod/${mod.id}`}>
                   <button>
-                    <span class="material-symbols-outlined">visibility</span>
+                    <span className="material-symbols-outlined">
+                      visibility
+                    </span>
                   </button>
                 </Link>
                 <button>
