@@ -9,6 +9,8 @@ function LoginPage() {
   const [hasAnAccount, setHasAnAccount] = useState(true);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
+  
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (loginMethod == "email") {
@@ -74,7 +76,7 @@ function LoginPage() {
 
   const loginForm = () => {
     return (
-      <div className="flex flex-col justify-center bg-white rounded-md py-12 w-2/5 mx-auto w-full px-8">
+      <div className="flex flex-col justify-center bg-white rounded-md py-12 w-2/5 mx-auto px-8">
         <h1 className="text-3xl text-center mb-6">
           {loginMethod == "email"
             ? "Get access with your email"
