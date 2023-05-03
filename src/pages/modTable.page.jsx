@@ -133,8 +133,8 @@ const ModsTable = () => {
                   {getModCategory(mod.category)}
                 </p>
               </div>
-              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-                <Link to={mod.image} className="w-full">
+              <div className="border border-slate-600 p-4 col-span-1 flex justify-center">
+                <Link to={mod.image} className="">
                   <span className="material-symbols-outlined">
                     photo_library
                   </span>
@@ -143,13 +143,13 @@ const ModsTable = () => {
               <div className="border border-slate-600 col-span-2 flex items-center">
                 <p className="text-center w-full">{mod.tags}</p>
               </div>
-              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-                <Link to={mod.documentation_link} className="w-full">
+              <div className="border border-slate-600 p-4 col-span-1 flex justify-center">
+                <Link to={mod.documentation_link} className="">
                   <span className="material-symbols-outlined">link</span>
                 </Link>
               </div>
-              <div className="border border-slate-600 p-4 col-span-1 flex items-center">
-                <Link to={mod.downloaded_link} className="w-full">
+              <div className="border border-slate-600 p-4 col-span-1 flex justify-center">
+                <Link to={mod.downloaded_link} className="">
                   <span className="material-symbols-outlined">link</span>
                 </Link>
               </div>
