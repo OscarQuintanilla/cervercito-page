@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  forwardRef,
+  useCallback,
+} from "react";
 import { supabase } from "../../supabase/client";
 import { useNavigate } from "react-router-dom";
+import TextEditor from "./TextEditor";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "react-quill/dist/quill.bubble.css";
@@ -25,6 +33,39 @@ const ModForm = () => {
   const [errorSavingMod, setErrorSavingMod] = useState(false);
 
   const navigate = useNavigate();
+
+  // Quill Editor Configurations
+
+  const editorRef = useRef(null);
+
+  const imageHandler = useCallback(() => {
+    const url = prompt("Enter the external image URL:");
+    if (url) {
+      insertToEditor(url);
+    } else {
+      console.warn("Invalid image URL provided.");
+    }
+  }, [editorRef]);
+
+  function insertToEditor(url) {
+    editorRef.current.getEditor().insertEmbed(null, "image", url);
+  }
+
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          ["bold", "italic", "underline"],
+          ["link", "blockquote", "image"],
+          [{ list: "ordered" }, { list: "bullet" }],
+        ],
+        handlers: {
+          image: imageHandler,
+        },
+      },
+    }),
+    [imageHandler]
+  );
 
   // queries
 
@@ -397,21 +438,24 @@ const ModForm = () => {
           >
             Description
           </label>
-          <ReactQuill
+          {/* <ReactQuill
             theme="snow"
             value={formData.description}
             onChange={(value) =>
               handleChange({ target: { name: "description", value } })
             }
-            modules={{
-              toolbar: [
-                ["bold", "italic", "underline"],
-                ["link", "blockquote", "image"],
-                [{ list: "ordered" }, { list: "bullet" }],
-              ],
-            }}
-          />
+            modules={modules}
+            ref={editorRef}
+          /> */}
         </div>
+        <TextEditor
+          name="description"
+          ref={editorRef}
+          value={formData.description}
+          onChange={handleChange}
+        />
+
+        <input type="hidden" name="editorContent" id="hidden-input" />
         <button
           type="submit"
           className={`w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
