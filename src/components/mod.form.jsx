@@ -438,15 +438,6 @@ const ModForm = () => {
           >
             Description
           </label>
-          {/* <ReactQuill
-            theme="snow"
-            value={formData.description}
-            onChange={(value) =>
-              handleChange({ target: { name: "description", value } })
-            }
-            modules={modules}
-            ref={editorRef}
-          /> */}
         </div>
         <TextEditor
           name="description"
