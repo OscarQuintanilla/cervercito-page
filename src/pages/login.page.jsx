@@ -1,5 +1,6 @@
 import { supabase } from "../../supabase/client";
 import { useEffect, useState } from "react";
+import { useAuthContext } from "../context/authContext";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ function LoginPage() {
   const [hasAnAccount, setHasAnAccount] = useState(true);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
-  
+  const { login } = useAuthContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,7 +33,10 @@ function LoginPage() {
         if (response.error) {
           console.log("Error: ", response.error);
         } else {
-          setIsEmailSent(true);
+          console.log("Response: ", response.data);
+          if (response.data) {
+            login(response.data);
+          }
         }
       } catch (error) {
         console.log("Error: ", error);

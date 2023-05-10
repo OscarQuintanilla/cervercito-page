@@ -65,7 +65,7 @@ const ModsTable = () => {
     <div className="bg-gray-100 p-8 mx-12 rounded-md">
       <div className="grid justify-items-end mb-6 ">
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ">
-          <Link to="/mod/register">Add new mod</Link>
+          <Link to="/admin/mod/register">Add new mod</Link>
         </button>
       </div>
 

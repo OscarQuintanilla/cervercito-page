@@ -1,32 +1,22 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "../../supabase/client";
+import { useAuthContext } from "../context/authContext";
 
 function NavBar() {
-  const [session, setSession] = useState(null);
-  const [location, setLocation] = useState(useLocation());
+  const { isAuthenticated, logout } = useAuthContext();
 
-  useEffect(() => {
-    verifySession();
-  }, []);
-
-  const logout = async () => {
+  const queryLogout = async () => {
     await supabase.auth.signOut();
-    setSession(null);
-  };
-
-  const verifySession = async () => {
-    const response = await supabase.auth.getSession();
-    if (response.data.session) {
-      setSession(response.data.session);
-    }
+    logout();
   };
 
   const loginButton = () => {
     return (
-      <Link to="/login">
+      <Link to="/session/login">
         <button
-          className={` ${location.pathname == "/login" ? "hidden" : "block"}`}
+          className={` ${
+            location.pathname == "/session/login" ? "hidden" : "block"
+          }`}
         >
           Access
         </button>
@@ -36,7 +26,7 @@ function NavBar() {
 
   const logoutButton = () => {
     return (
-      <button className="" onClick={logout}>
+      <button className="" onClick={queryLogout}>
         Logout
       </button>
     );
@@ -59,14 +49,20 @@ function NavBar() {
       </div>
       <div className="flex flex-row">
         <div className="mr-8">
-          {session ? (
-            <Link to="/admin/panel">{session.user.email}</Link>
+          {isAuthenticated ? (
+            <Link to="/admin/panel">
+              <button>Admin Panel</button>
+            </Link>
           ) : (
             <></>
           )}
         </div>
         <div>
-          {session ? <div>{logoutButton()}</div> : <div>{loginButton()}</div>}
+          {isAuthenticated ? (
+            <div>{logoutButton()}</div>
+          ) : (
+            <div>{loginButton()}</div>
+          )}
         </div>
       </div>
     </div>
