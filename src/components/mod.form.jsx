@@ -206,7 +206,7 @@ const ModForm = () => {
           if (relationResponse.status === 201) {
             // Relations created successfully
             setSaving(false);
-            navigate("/mod/list");
+            navigate("/admin/mod/list");
           } else {
             console.log("Error creating relations");
             console.log(relationResponse.error);

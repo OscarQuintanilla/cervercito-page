@@ -8,7 +8,7 @@ const adminPanel = () => {
         *Shows a Mod Stadistic with an animation*
       </div>
       <div className="grid grid-cols-3 gap-6 px-36 py-2">
-        <Link to="/mod/panel">
+        <Link to="/admin/mod/panel">
           <div className="bg-gray-200 p-5 aspect-square flex flex-row justify-center items-center border-8 border-gray-400 rounded-md hover:bg-gray-300">
             Mods Panel
           </div>
