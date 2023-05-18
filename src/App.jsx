@@ -10,6 +10,7 @@ import ModPage from "./pages/mod.page";
 import AdminPanel from "./pages/adminPanel.page";
 import ModPanel from "./pages/modPanel.page";
 import ModTable from "./pages/modTable.page";
+import ModGalleryPage from "./pages/ModGalleryPage";
 
 //Components
 import NavBar from "./components/NavBar";
@@ -46,6 +47,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/mod/:modId" element={<ModPage />} />
+          <Route path="/mod/gallery/:category" element={<ModGalleryPage />} />
           <Route path="/session" element={<PublicRoute />}>
             <Route path="/session/login" element={<LoginPage />} />
             <Route path="/session/logout" element={<Logout />} />
