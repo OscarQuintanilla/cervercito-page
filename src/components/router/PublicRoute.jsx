@@ -6,13 +6,11 @@ export default function PublicRoute() {
   const { isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
 
-  console.log("PublicRoute", isAuthenticated);
-
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated]);
 
   return (
     <>

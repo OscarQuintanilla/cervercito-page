@@ -29,15 +29,23 @@ function App() {
 
   // OTP validation auth
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && location.pathname != "/") {
-        navigate("/session/login");
-      } else {
-        setSession(session);
-        window.localStorage.setItem("USER_DATA", JSON.stringify(session));
-        window.localStorage.setItem("LOGGED_IN", true);
-      }
-    });
+    const verifyOTP = async () => {
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          console.log("Session found", session);
+          window.localStorage.setItem("USER_DATA", JSON.stringify(session));
+          window.localStorage.setItem("LOGGED_IN", true);
+          setSession(session);
+          navigate("/");
+        } else {
+          setSession("no session");
+        }
+      });
+    };
+
+    if (session === null) {
+      verifyOTP();
+    }
   }, [navigate]);
 
   return (
