@@ -65,6 +65,7 @@ function App() {
             <Route path="/admin/mod/panel" element={<ModPanel />} />
             <Route path="/admin/mod/list" element={<ModTable />} />
             <Route path="/admin/mod/register" element={<ModForm />} />
+            <Route path="/admin/mod/edit/:modId" element={<ModForm />} />
           </Route>
           <Route path="*" element={<h1>404: Not Found</h1>} />
         </Routes>

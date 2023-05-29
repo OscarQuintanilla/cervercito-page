@@ -1,12 +1,12 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import categories from "../data/Categories";
 import { supabase } from "../../supabase/client";
 import ReactQuill from "react-quill";
 
 const ModPage = () => {
   const { modId } = useParams();
   const [mod, setMod] = useState(null);
+  const [databaseCategories, setDatabaseCategories] = useState([]);
   const [category, setCategory] = useState(null);
   const [videoSource, setVideoSource] = useState(null);
 
@@ -97,10 +97,6 @@ const ModPage = () => {
   };
 
   function splitDocumentationsVideos(modData) {
-    /** yt
-      
-     */
-
     const source = identifyVideoSource(modData.documentation_videos);
 
     // cleans the string from the form
@@ -138,13 +134,31 @@ const ModPage = () => {
     getModbyId();
   }, []);
 
+  const getCategories = async () => {
+    const { data, error } = await supabase.from("categories").select();
+    if (error) {
+      console.log(error);
+    }
+    return data;
+  };
+
   useEffect(() => {
     try {
-      setCategory(categories.find((category) => category.id == mod.category));
+      getCategories().then((categories) => {
+        setDatabaseCategories(categories);
+      });
     } catch (error) {
-      setCategory("No category found");
+      setCategory({ name: "No category found" });
     }
   }, [mod]);
+
+  useEffect(() => {
+    if (databaseCategories.length > 0 && mod) {
+      setCategory(
+        databaseCategories.find((category) => category.id == mod.category)
+      );
+    }
+  }, [databaseCategories]);
 
   return (
     <>
@@ -163,7 +177,9 @@ const ModPage = () => {
                   <h1 className="text-3xl">{mod.name}</h1>
                   <hr />
                   <h2 className="mt-2 text-xl">{mod.subtitle}</h2>
-                  <h3 className="text-gray-400 text-sm">{category.name}</h3>
+                  <h3 className="text-gray-400 text-sm">
+                    {category ? category.name : "No category"}
+                  </h3>
                 </div>
               </div>
               <ReactQuill
@@ -196,8 +212,8 @@ const ModPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col justify-center w-3/4 m-auto">
-            <hr />
+          <hr className=" my-6" />
+          <div className="flex flex-col justify-center w-3/4 mx-auto">
             {mod.documentation_videos ? (
               mod.documentation_videos.map((video) =>
                 video.source == "tiktok" ? (

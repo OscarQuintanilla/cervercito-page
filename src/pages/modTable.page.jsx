@@ -136,7 +136,6 @@ const ModsTable = () => {
                 <div className="border border-slate-600 col-span-4 px-1 flex items-center">
                   <p className="text-center w-full">{mod.subtitle}</p>
                 </div>
-
                 <div className="border border-slate-600 col-span-2 flex items-center">
                   <p className="text-center w-full">
                     {getModCategory(mod.category)}
@@ -161,9 +160,11 @@ const ModsTable = () => {
                     </button>
                   </Link>
                   <button>
-                    <span className="material-symbols-outlined">
-                      edit_square
-                    </span>
+                    <Link to={`/admin/mod/edit/${mod.id}`}>
+                      <span className="material-symbols-outlined">
+                        edit_square
+                      </span>
+                    </Link>
                   </button>
                   <button onClick={() => handleDelete(mod.id)}>
                     <span className="material-symbols-outlined">delete</span>

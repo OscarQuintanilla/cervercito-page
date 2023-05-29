@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-const Mosaic = ({ title, categories }) => {
+const Mosaic = ({ title, categories, ammountOfMods }) => {
   return (
     <div className="flex flex-col  bg-white">
       <div className="flex flex-row justify-between px-3 my-4">
         <h2 className=" ">{title}</h2>
         <Link to="/mod/gallery/all">
-          <h3 className="underline">Ver todos los mods</h3>
+          <h3 className="underline">Ver todos los mods ({ammountOfMods})</h3>
         </Link>
       </div>
       <div className="grid grid-cols-5 gap-6 p-0 auto-cols-max">

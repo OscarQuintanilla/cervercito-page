@@ -1,13 +1,6 @@
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useMemo,
-  forwardRef,
-  useCallback,
-} from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../../supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import TextEditor from "./TextEditor";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -25,47 +18,18 @@ const ModForm = () => {
     documentation_videos: "",
   });
 
+  const { modId } = useParams();
   const [databaseTagsArray, setDatabaseTagsArray] = useState([]);
   const [formTags, setFormTags] = useState([]);
   const [newModTagsArray, setNewModTagsArray] = useState([]);
   const [categories, setCategories] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [errorSavingMod, setErrorSavingMod] = useState(false);
+  const [foundedMod, setFoundedMod] = useState(null);
 
   const navigate = useNavigate();
 
   // Quill Editor Configurations
-
   const editorRef = useRef(null);
-
-  const imageHandler = useCallback(() => {
-    const url = prompt("Enter the external image URL:");
-    if (url) {
-      insertToEditor(url);
-    } else {
-      console.warn("Invalid image URL provided.");
-    }
-  }, [editorRef]);
-
-  function insertToEditor(url) {
-    editorRef.current.getEditor().insertEmbed(null, "image", url);
-  }
-
-  const modules = useMemo(
-    () => ({
-      toolbar: {
-        container: [
-          ["bold", "italic", "underline"],
-          ["link", "blockquote", "image"],
-          [{ list: "ordered" }, { list: "bullet" }],
-        ],
-        handlers: {
-          image: imageHandler,
-        },
-      },
-    }),
-    [imageHandler]
-  );
 
   // queries
 
@@ -81,6 +45,11 @@ const ModForm = () => {
 
   async function queryGetModByName(name) {
     const response = await supabase.from("mods").select().eq("name", name);
+    return response;
+  }
+
+  async function queryGetModById(id) {
+    const response = await supabase.from("mods").select().eq("id", id);
     return response;
   }
 
@@ -267,6 +236,19 @@ const ModForm = () => {
         console.log(result.error);
       }
     });
+  }, []);
+
+  useEffect(() => {
+    if (modId) {
+      console.log(modId);
+      queryGetModById(modId).then((result) => {
+        if (result.data) {
+          setFoundedMod(result.data[0]);
+        } else if (result.error) {
+          console.log(result.error);
+        }
+      });
+    }
   }, []);
 
   return (
