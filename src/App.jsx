@@ -10,6 +10,7 @@ import ModPage from "./pages/mod.page";
 import AdminPanel from "./pages/adminPanel.page";
 import ModPanel from "./pages/modPanel.page";
 import ModTable from "./pages/modTable.page";
+import ModGalleryPage from "./pages/ModGalleryPage";
 
 //Components
 import NavBar from "./components/NavBar";
@@ -28,15 +29,23 @@ function App() {
 
   // OTP validation auth
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && location.pathname != "/") {
-        navigate("/session/login");
-      } else {
-        setSession(session);
-        window.localStorage.setItem("USER_DATA", JSON.stringify(session));
-        window.localStorage.setItem("LOGGED_IN", true);
-      }
-    });
+    const verifyOTP = async () => {
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          console.log("Session found", session);
+          window.localStorage.setItem("USER_DATA", JSON.stringify(session));
+          window.localStorage.setItem("LOGGED_IN", true);
+          setSession(session);
+          navigate("/");
+        } else {
+          setSession("no session");
+        }
+      });
+    };
+
+    if (session === null) {
+      verifyOTP();
+    }
   }, [navigate]);
 
   return (
@@ -46,6 +55,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/mod/:modId" element={<ModPage />} />
+          <Route path="/mod/gallery/:category" element={<ModGalleryPage />} />
           <Route path="/session" element={<PublicRoute />}>
             <Route path="/session/login" element={<LoginPage />} />
             <Route path="/session/logout" element={<Logout />} />
@@ -55,6 +65,7 @@ function App() {
             <Route path="/admin/mod/panel" element={<ModPanel />} />
             <Route path="/admin/mod/list" element={<ModTable />} />
             <Route path="/admin/mod/register" element={<ModForm />} />
+            <Route path="/admin/mod/edit/:modId" element={<ModForm />} />
           </Route>
           <Route path="*" element={<h1>404: Not Found</h1>} />
         </Routes>

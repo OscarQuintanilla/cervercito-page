@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/authContext";
 import { useEffect } from "react";
 
@@ -10,7 +10,6 @@ export default function AdminRoute() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log("AdminRoute", isAuthenticated);
       navigate("/session/login");
     }
   }, [isAuthenticated, navigate]);

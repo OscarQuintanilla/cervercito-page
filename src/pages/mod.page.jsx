@@ -1,28 +1,120 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import categories from "../data/Categories";
 import { supabase } from "../../supabase/client";
 import ReactQuill from "react-quill";
 
 const ModPage = () => {
   const { modId } = useParams();
   const [mod, setMod] = useState(null);
+  const [databaseCategories, setDatabaseCategories] = useState([]);
   const [category, setCategory] = useState(null);
+  const [videoSource, setVideoSource] = useState(null);
 
   const navigate = useNavigate();
 
+  function identifyVideoSource(link) {
+    const youtubeFilter = link.match("youtube.com");
+    const tiktokFilter = link.match("tiktok.com");
+    if (youtubeFilter) {
+      return "youtube";
+    }
+    if (tiktokFilter) {
+      return "tiktok";
+    }
+  }
+
+  function prepareYoutubeEmbedLink(link) {
+    let videoId = link.match(/v=([^&]+)/)[1];
+    let embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    let dataLink = {
+      videoId: videoId,
+      source: "youtube",
+      embedUrl: embedUrl,
+    };
+
+    return dataLink;
+  }
+
+  function prepareTiktokEmbedLink(link) {
+    let dataLinkArray = link.split("/");
+    let userName = dataLinkArray[3].split("@")[1];
+    let dataLink = {
+      source: "tiktok",
+      fulllink: link,
+      user: userName,
+      videoId: dataLinkArray[5],
+    };
+
+    return dataLink;
+  }
+
+  const tiktokEmbed = (dataLink) => {
+    return (
+      <>
+        <script async src="https://www.tiktok.com/embed.js"></script>
+        <div
+          className="m-2"
+          style={{
+            position: "relative",
+            width: "100%",
+            height: 0,
+            paddingBottom: "100%",
+          }}
+        >
+          <iframe
+            src={`https://www.tiktok.com/embed/${dataLink.videoId}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              left: 0,
+              top: 0,
+            }}
+          ></iframe>
+        </div>
+      </>
+    );
+  };
+
+  const youtubeEmbed = (dataLink) => {
+    return (
+      <>
+        <div className="mb-8 basis-3/4" key={dataLink.videoId}>
+          <iframe
+            className="m-auto"
+            width="560"
+            height="315"
+            src={dataLink.embedUrl}
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      </>
+    );
+  };
+
   function splitDocumentationsVideos(modData) {
+    const source = identifyVideoSource(modData.documentation_videos);
+
+    // cleans the string from the form
     let documentationVideos = modData.documentation_videos.split(", ");
     documentationVideos[documentationVideos.length - 1].trim();
     if (documentationVideos[documentationVideos.length - 1].trim() === "") {
       documentationVideos.pop();
     }
 
+    // prepares the string for the embed
     if (documentationVideos)
       documentationVideos = documentationVideos.map((video) => {
-        let videoId = video.match(/v=([^&]+)/)[1];
-        let embedUrl = `https://www.youtube.com/embed/${videoId}`;
-        return embedUrl;
+        if (source == "youtube") {
+          return prepareYoutubeEmbedLink(video);
+        }
+        if (source == "tiktok") {
+          return prepareTiktokEmbedLink(video);
+        }
       });
 
     return documentationVideos;
@@ -35,7 +127,6 @@ const ModPage = () => {
         response.data[0].documentation_videos = splitDocumentationsVideos(
           response.data[0]
         );
-
         setMod(response.data[0]);
       }
     }
@@ -43,13 +134,31 @@ const ModPage = () => {
     getModbyId();
   }, []);
 
+  const getCategories = async () => {
+    const { data, error } = await supabase.from("categories").select();
+    if (error) {
+      console.log(error);
+    }
+    return data;
+  };
+
   useEffect(() => {
     try {
-      setCategory(categories.find((category) => category.id == mod.category));
+      getCategories().then((categories) => {
+        setDatabaseCategories(categories);
+      });
     } catch (error) {
-      setCategory("No category found");
+      setCategory({ name: "No category found" });
     }
   }, [mod]);
+
+  useEffect(() => {
+    if (databaseCategories.length > 0 && mod) {
+      setCategory(
+        databaseCategories.find((category) => category.id == mod.category)
+      );
+    }
+  }, [databaseCategories]);
 
   return (
     <>
@@ -68,7 +177,9 @@ const ModPage = () => {
                   <h1 className="text-3xl">{mod.name}</h1>
                   <hr />
                   <h2 className="mt-2 text-xl">{mod.subtitle}</h2>
-                  <h3 className="text-gray-400 text-sm">{category.name}</h3>
+                  <h3 className="text-gray-400 text-sm">
+                    {category ? category.name : "No category"}
+                  </h3>
                 </div>
               </div>
               <ReactQuill
@@ -91,7 +202,7 @@ const ModPage = () => {
                     </p>
                   </Link>
                   <hr className="my-2" />
-                  <h1 className="text-lg ">Download</h1>
+                  <h1 className="text-lg ">Descarga</h1>
                   <Link to={mod.downloaded_link}>
                     <p className="text-xs text-gray-500">
                       {mod.documentation_link}
@@ -101,23 +212,18 @@ const ModPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col justify-center w-3/4 m-auto">
-            <hr />
+          <hr className=" my-6" />
+          <div className="flex flex-col justify-center w-3/4 mx-auto">
             {mod.documentation_videos ? (
-              mod.documentation_videos.map((video) => (
-                <div className="mb-8 basis-3/4" key={video}>
-                  <h1 className="my-4">Video Documentation</h1>
-                  <iframe
-                    className="m-auto"
-                    width="560"
-                    height="315"
-                    src={video}
-                    title="YouTube video player"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-              ))
+              mod.documentation_videos.map((video) =>
+                video.source == "tiktok" ? (
+                  <div key={video.videoId}>{tiktokEmbed(video)}</div>
+                ) : video.source == "youtube" ? (
+                  <div key={video.videoId}>{youtubeEmbed(video)}</div>
+                ) : (
+                  <></>
+                )
+              )
             ) : (
               <></>
             )}

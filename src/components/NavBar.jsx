@@ -18,7 +18,7 @@ function NavBar() {
             location.pathname == "/session/login" ? "hidden" : "block"
           }`}
         >
-          Access
+          Acceder
         </button>
       </Link>
     );
@@ -27,7 +27,7 @@ function NavBar() {
   const logoutButton = () => {
     return (
       <button className="" onClick={queryLogout}>
-        Logout
+        Cerrar Sesión
       </button>
     );
   };
@@ -41,17 +41,17 @@ function NavBar() {
       </div>
       <div className="flex flex-row space-x-4">
         <div>
-          <Link to="/">Home</Link>{" "}
+          <Link to="/">Inicio</Link>{" "}
         </div>
-        <div>Gallery</div>
-        <div>Map</div>
-        <div>Forum</div>
+        <div>Gallería</div>
+        <div>Mapa</div>
+        <div>Foro</div>
       </div>
       <div className="flex flex-row">
         <div className="mr-8">
           {isAuthenticated ? (
             <Link to="/admin/panel">
-              <button>Admin Panel</button>
+              <button>Administración</button>
             </Link>
           ) : (
             <></>
