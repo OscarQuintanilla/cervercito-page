@@ -1,12 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Minercraftory";
+  src: url("./assets/fonts/Minercraftory.ttf");
+}
+
+@font-face {
+  font-family: "Minercraftia";
+  src: url("./assets/fonts/Minecraftia-Regular.ttf");
+}
 
 body {
   background-image: url("./assets/bg2.png");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
+}
+
+.ql-editor {
+  margin: 0px;
+  padding: 0px;
+  font-size: 1.2em;
+}
+
+h1 {
+  font-family: "Minercraftia";
+  font-size: 3em;
+  font-weight: lighter;
+}
+
+h2 {
+  font-family: "Minercraftia";
+  font-size: 1.5em;
+  font-weight: lighter;
+}
+
+h3 {
+  font-family: "Minercraftia";
+  font-size: 1em;
+  font-weight: lighter;
 }
