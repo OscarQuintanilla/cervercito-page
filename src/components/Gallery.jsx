@@ -1,12 +1,9 @@
-// create a gallery functional component that will display the items with the image and name using tailwind css classes use the map function to iterate through the items and display them
-// create a list of items with the id, name, description and image
-
 const Gallery = ({ title, items }) => {
   return (
     <div className="flex flex-col flex-wrap bg-white">
       <div className="flex flex-row justify-between px-3 my-4">
         <div>
-          <h3>{ title }</h3>
+          <h3>{title}</h3>
         </div>
         <div>
           <div className="relative w-full ">
@@ -32,7 +29,11 @@ const Gallery = ({ title, items }) => {
           <div key={item.id} className="flex-none p-2 w-1/6 overflow-clip">
             <div className="rounded overflow-hidden ">
               <div className="rounded overflow-hidden shadow-lg aspect-square max-w-fit">
-              <img src={item.image} alt={item.name} className="w-full h-full" />
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full"
+                />
               </div>
               <div className="px-6 py-4 shadow-lg">
                 <div className="font-bold text-xl mb-2">{item.name}</div>

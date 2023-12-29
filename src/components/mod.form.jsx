@@ -1,12 +1,29 @@
 import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../../supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  queryGetCategories,
+  queryCreateMod,
+  queryUpdateMod,
+  querygetTagsByMod,
+  queryGetModByName,
+  queryGetModById,
+  queryGetTags,
+  queryCreateTag,
+  queryCreateModTagsRelation,
+} from "../api/Mods.api";
 import TextEditor from "./TextEditor";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "react-quill/dist/quill.bubble.css";
 
 const ModForm = () => {
+  const { modId } = useParams();
+  const [databaseTagsArray, setDatabaseTagsArray] = useState([]);
+  const [formTags, setFormTags] = useState([]);
+  const [newModTagsArray, setNewModTagsArray] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     subtitle: "",
@@ -16,61 +33,15 @@ const ModForm = () => {
     documentation_link: "",
     downloaded_link: "",
     documentation_videos: "",
+    isDependency: false,
   });
-
-  const { modId } = useParams();
-  const [databaseTagsArray, setDatabaseTagsArray] = useState([]);
-  const [formTags, setFormTags] = useState([]);
-  const [newModTagsArray, setNewModTagsArray] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [foundedMod, setFoundedMod] = useState(null);
 
   const navigate = useNavigate();
 
   // Quill Editor Configurations
   const editorRef = useRef(null);
 
-  // queries
-
-  async function queryGetCategories() {
-    const response = await supabase.from("categories").select();
-    return response;
-  }
-
-  async function queryCreateMod(mod_object) {
-    const response = await supabase.from("mods").insert([mod_object]);
-    return response;
-  }
-
-  async function queryGetModByName(name) {
-    const response = await supabase.from("mods").select().eq("name", name);
-    return response;
-  }
-
-  async function queryGetModById(id) {
-    const response = await supabase.from("mods").select().eq("id", id);
-    return response;
-  }
-
-  async function queryGetTags() {
-    const response = await supabase.from("tags").select();
-    return response;
-  }
-
-  async function queryCreateTag(tag_array) {
-    const response = await supabase.from("tags").insert(tag_array);
-    return response;
-  }
-
-  // Creates Relations between the new mod and the tags
-  async function queryCreateModTagsRelation(relationsArray) {
-    const response = await supabase.from("mod_tag").insert(relationsArray);
-    return response;
-  }
-
   // Data handlers
-
   function formTagsToArray() {
     if (formTags.length > 0) {
       const tagsArray = formTags.split(", ");
@@ -98,6 +69,7 @@ const ModForm = () => {
     }
   }
 
+  // todo: rework this function to be more efficient
   function findMatchingTags(formTags, dataBaseTags) {
     if (formTags && dataBaseTags) {
       const result = formTags.map((formTag) => {
@@ -158,17 +130,14 @@ const ModForm = () => {
         if (queryCreateTagsResponse.status === 201) {
           // Tags created successfully
           const allTags = await queryGetTags();
-          console.log(allTags);
           const matchingTagsArray = findMatchingTags(
             newModTagsArray,
             allTags.data
           );
-          console.log(matchingTagsArray);
           const relationsArray = prepareRelationModTagsObject(
             mod_id,
             matchingTagsArray
           );
-          console.log(relationsArray);
           const relationResponse = await queryCreateModTagsRelation(
             relationsArray
           );
@@ -206,6 +175,16 @@ const ModForm = () => {
     }
   };
 
+  const editModProcess = async () => {
+    const queryModResponse = await queryUpdateMod(formData);
+    if (queryModResponse.status === 204) {
+      navigate("/admin/mod/list");
+    } else {
+      console.log("Error updating mod");
+      console.log(queryModResponse);
+    }
+  };
+
   // handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -214,8 +193,11 @@ const ModForm = () => {
 
   useEffect(() => {
     if (saving) {
-      console.log("saving");
-      insertNewModProcess();
+      if (modId) {
+        editModProcess();
+      } else {
+        insertNewModProcess();
+      }
     }
   }, [saving]);
 
@@ -240,10 +222,9 @@ const ModForm = () => {
 
   useEffect(() => {
     if (modId) {
-      console.log(modId);
       queryGetModById(modId).then((result) => {
         if (result.data) {
-          setFoundedMod(result.data[0]);
+          setFormData(result.data[0]);
         } else if (result.error) {
           console.log(result.error);
         }
@@ -253,7 +234,11 @@ const ModForm = () => {
 
   return (
     <div className="grid grid-cols-3 gap-6 bg-white px-8 mx-12 rounded-md py-12">
-      <form className="space-y-6 col-span-2" onSubmit={handleSubmit}>
+      <form
+        className="space-y-6 col-span-2"
+        onSubmit={handleSubmit}
+        key={formData.id}
+      >
         <div className="grid grid-cols-2 gap-6">
           {/* Name Input */}
           <div className="flex flex-col mb-4">
@@ -350,7 +335,6 @@ const ModForm = () => {
               placeholder="Tags"
               value={formTags}
               onChange={handleTagsChange}
-              required
             />
           </div>
           {/* Documentation Link Input */}
@@ -369,7 +353,6 @@ const ModForm = () => {
               placeholder="Documentation URL"
               value={formData.documentation_link}
               onChange={handleChange}
-              required
             />
           </div>
           {/* Downloaded Link Input */}
@@ -388,7 +371,6 @@ const ModForm = () => {
               placeholder="Download URL"
               value={formData.downloaded_link}
               onChange={handleChange}
-              required
             />
           </div>
           {/* Documentation Videos */}
@@ -407,11 +389,24 @@ const ModForm = () => {
               placeholder="Download URL"
               value={formData.documentation_videos}
               onChange={handleChange}
-              required
             />
           </div>
         </div>
-
+        {/* Is this a dependency mod? */}
+        <div className="flex flex-col mb-4">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={formData.isDependency}
+              onChange={(e) =>
+                setFormData({ ...formData, isDependency: e.target.checked })
+              }
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <span className="ms-3 text-sm font-medium">Es Dependencia</span>
+          </label>
+        </div>
         {/* Description Input */}
         <div className="flex flex-col mb-4">
           <label
@@ -431,12 +426,10 @@ const ModForm = () => {
         <input type="hidden" name="editorContent" id="hidden-input" />
         <button
           type="submit"
-          className={`w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
-            !allFieldsFilled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={!allFieldsFilled}
+          className={`w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded`}
+          disabled={false}
         >
-          Register Mod
+          {modId ? "Edit Mod" : "Create Mod"}
         </button>
       </form>
       <div className="bg-gray-100 p-6 rounded-md text-ellipsis overflow-hidden">

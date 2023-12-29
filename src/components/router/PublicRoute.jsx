@@ -4,13 +4,13 @@ import { useEffect } from "react";
 
 export default function PublicRoute() {
   const { isAuthenticated } = useAuthContext();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-    }
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate("/"); // is this makin redirect unecessary?
+  //   }
+  // }, [isAuthenticated]);
 
   return (
     <>

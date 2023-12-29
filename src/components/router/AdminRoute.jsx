@@ -4,7 +4,6 @@ import { useEffect } from "react";
 
 export default function AdminRoute() {
   const { isAuthenticated } = useAuthContext();
-  console.log("AdminRoute", isAuthenticated);
 
   const navigate = useNavigate();
 

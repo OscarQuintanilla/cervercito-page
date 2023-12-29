@@ -43,7 +43,7 @@ const Home = () => {
         categories={categories}
         ammountOfMods={ammountOfMods}
       />
-      <Gallery title={"Galería"} items={items} />
+      {/* <Gallery title={"Galería"} items={items} /> */}
     </div>
   );
 };

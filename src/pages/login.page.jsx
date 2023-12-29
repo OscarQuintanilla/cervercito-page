@@ -19,6 +19,7 @@ function LoginPage() {
         // Email login
         await supabase.auth.signInWithOtp({
           email,
+          options: { redirectTo: "http://127.0.0.1:5173/" },
         });
         setIsEmailSent(true);
       } catch (error) {
